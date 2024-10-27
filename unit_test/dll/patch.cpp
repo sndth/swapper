@@ -1,27 +1,30 @@
-#include <iostream>
-
 #include "../../sndth/swapper.hpp"
 
 BOOL APIENTRY
-DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
+DllMain(HMODULE /* hModule */,
+        DWORD ul_reason_for_call,
+        LPVOID /* lpReserved */)
 {
-  switch (ul_reason_for_call) {
-    case DLL_PROCESS_ATTACH: {
-      auto handle = reinterpret_cast<size_t>(GetModuleHandle(nullptr));
+  if (ul_reason_for_call == DLL_PROCESS_ATTACH) {
+    // 1. Get application handle
+    auto handle = reinterpret_cast<uintptr_t>(GetModuleHandle(nullptr));
 
-      swapper::set_lock(0);
-      swapper::set_base(handle);
-      swapper::set_real(0x40313C);
+    // 2. Unprotect (unlock) application
+    swapper::set_lock(0);
 
-      auto target_text = "Hello would!";
-      auto target_address = swapper::get_target();
+    // 3. Set base address (handle as uintptr_t)
+    swapper::set_base(handle);
 
-      strcpy_s(target_address, strlen(target_text) + 1, target_text);
-    } break;
-    case DLL_THREAD_ATTACH:
-    case DLL_THREAD_DETACH:
-    case DLL_PROCESS_DETACH:
-      break;
+    // 4. Set real address (from debugger like IDA)
+    swapper::set_real(0x40313C);
+
+    // 5. Prepare some things like text to swap and target address.
+    auto target_text = "Hello would!";
+    auto target_address = swapper::get_target();
+
+    // 6. At this point, we should have target address and text, so we can swap!
+    strcpy_s(target_address, strlen(target_text) + 1, target_text);
   }
+
   return TRUE;
 }
