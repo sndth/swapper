@@ -11,6 +11,7 @@
 
 #include <exception>
 #include <Windows.h>
+#include <unordered_map>
 
 class swapper final : public std::exception
 {
@@ -66,6 +67,15 @@ public:
     }
 
     return reinterpret_cast<char*>(base_address_ + (real_address_ - 0x400000));
+  }
+
+  static void set_array(
+    const std::unordered_map<int, std::pair<int, int>>& new_array)
+  {
+    for (const auto& [fst, snd] : new_array) {
+      set_real(fst);
+      std::memset(get_target(), snd.first, snd.second);
+    }
   }
 };
 
