@@ -1,9 +1,11 @@
+#pragma once
+
 #include <iostream>
 
 #include "../sndth/swapper.hpp"
 
-int
-main()
+inline void
+hello_world()
 {
   LoadLibraryA("swapper.dll");
   std::cout << "Hello world!";
